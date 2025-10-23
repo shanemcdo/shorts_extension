@@ -41,11 +41,20 @@ function createPopup() {
 	h1.style.margin = '1rem';
 	newP('It looks like you\'re doomscrolling again.', div);
 	newP('Are you sure that\'s what you want to do?', div);
+	const closeButton = newEl('button', div);
+	closeButton.innerText = 'No';
+	closeButton.onclick = closeCurrentTab;
 }
 
 function removePopup() {
 	popup.remove();
 	popup = null;
+}
+
+async function closeCurrentTab() {
+	chrome.runtime.sendMessage({
+		type: 'closeCurrentTab',
+	});
 }
 
 setInterval(() => {
