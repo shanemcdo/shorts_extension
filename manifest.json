@@ -1,0 +1,20 @@
+{
+  "manifest_version": 1,
+  "name": "Youtube Shorts Anti-Doomscroll",
+  "description": "This extension is meant to make sure that you really want to doomscroll on youtube shorts.",
+  "version": "1.0",
+  "action": {
+    "default_popup": "index.html"
+  },
+  "permissions": [
+	  "activeTab",
+	  "scripting"
+  ],
+  "content_scripts": [{
+	  "matches": ["https://www.youtube.com/shorts/*"],
+	  "js": ["content-script.js"]
+  }],
+  "background": {
+  	"service_worker": "background.js"
+  }
+}
