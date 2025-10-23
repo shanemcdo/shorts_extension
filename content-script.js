@@ -19,6 +19,7 @@ function createPopup() {
 	div.style.background = 'black';
 	div.style['z-index'] = 1000000;
 	div.style['text-align'] = 'center';
+	div.style['border-radius'] = '1rem';
 }
 
 function removePopup() {
@@ -32,5 +33,9 @@ setInterval(() => {
 		removePopup();
 	} else if(!popup && shorts) {
 		createPopup();
+		const video = document.querySelector('video');
+		if(video) {
+			video.pause();
+		}
 	}
 }, 100);
