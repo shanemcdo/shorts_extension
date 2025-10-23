@@ -57,15 +57,21 @@ async function closeCurrentTab() {
 	});
 }
 
+function pauseVideo() {
+	const video = document.querySelector('video');
+	if(video) {
+		video.pause();
+	}
+}
+
 setInterval(() => {
 	const shorts = document.location.pathname.includes('/shorts/');
 	if(popup && !shorts) {
 		removePopup();
 	} else if(!popup && shorts) {
 		createPopup();
-		const video = document.querySelector('video');
-		if(video) {
-			video.pause();
-		}
+		pauseVideo();
+	} else if(popup && shorts) {
+		pauseVideo();
 	}
 }, 100);
