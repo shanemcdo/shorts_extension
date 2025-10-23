@@ -11,7 +11,7 @@
 	  "scripting"
   ],
   "content_scripts": [{
-	  "matches": ["https://www.youtube.com/shorts/*"],
+	  "matches": ["https://www.youtube.com/*"],
 	  "js": ["content-script.js"]
   }]
 }
