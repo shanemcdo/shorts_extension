@@ -71,10 +71,10 @@ function createPopup() {
 	popup.style['z-index'] = 1000000;
 	const div = newEl('div', popup);
 	div.style.position = 'absolute';
-	div.style.left = '10vw';
-	div.style.top = '10vh';
-	div.style.width = '80vw';
-	div.style.height = '80vh';
+	div.style.left = '20vw';
+	div.style.top = '20vh';
+	div.style.width = '60vw';
+	div.style.height = '60vh';
 	div.style.background = '#111';
 	div.style.color = '#ddd';
 	div.style['z-index'] = 1000001;
