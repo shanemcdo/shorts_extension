@@ -4,13 +4,17 @@ const State = Object.freeze({
 	HOW_LONG: 2,
 	WAITING_FIVE_MINUTES: 3,
 	DONE_WAITING_FIVE_MINUTES: 4,
+	WAITING_ONE_SHORT: 5,
+	DONE_WAITING_ONE_SHORT: 6,
 });
 const TEXT = {
 	[State.START]: [ 'Hey there bud.', 'It looks like you\'re doomscrolling again.\nAre you sure that\'s what you want to do?'],
 	[State.REALLY]: [ 'Really?', 'Are you sure?'],
 	[State.HOW_LONG]: [ 'Fine', 'How long are you going to doomscroll?'],
 	[State.WAITING_FIVE_MINUTES]: [ 'Okayyyy', 'I\'ll check back up on you in 5 minutes.'],
-	[State.DONE_WAITING_FIVE_MINUTES]: [ 'Hello again!', 'You done?'],
+	[State.DONE_WAITING_FIVE_MINUTES]: [ 'Hello again!', 'It\'s been 5 minutes. You done?'],
+	[State.WAITING_ONE_SHORT]: [ 'Fineeee', 'I\'ll come back after one short'],
+	[State.DONE_WAITING_ONE_SHORT]: [ 'I\'m Back!', 'It\'s been 1 short. You done?'],
 };
 const BUTTONS = {
 	[State.START]: [ ['No', closeCurrentTab], ['Yes', () => State.REALLY] ],
@@ -25,11 +29,19 @@ const BUTTONS = {
 		return State.WAITING_FIVE_MINUTES;
 	}] ],
 	[State.DONE_WAITING_FIVE_MINUTES]: [ ['Ok, yeah I\'m done', closeCurrentTab], ['No I\'m not done', () => State.HOW_LONG] ],
+	[State.WAITING_ONE_SHORT]: [ ['Ok', () => {
+		removePopup();
+		return State.WAITING_ONE_SHORT;
+	}] ],
+	[State.DONE_WAITING_ONE_SHORT]: [ ['Ok, yeah I\'m done', closeCurrentTab], ['No I\'m not done', () => State.HOW_LONG] ],
 };
 
 let popup = null;
 let state = State.START;
 let isActive = true;
+let prev_video_src = null;
+let prev_short_count = 0;
+let short_count = 0;
 
 function newEl(tag, parent = null) {
 	const el = document.createElement(tag);
@@ -106,18 +118,36 @@ function giveFiveMinutes() {
 }
 
 function giveOneShort() {
-	// TODO
+	isActive = false;
+	prev_short_count = short_count;
+	const interval = setInterval(() => {
+		if(short_count > prev_short_count) {
+			state = State.DONE_WAITING_ONE_SHORT;
+			isActive = true;
+			clearInterval(interval);
+		}
+	}, 100);
+	return State.WAITING_ONE_SHORT;
 }
 
 
+function getVideo() {
+	return document.querySelector('video');
+}
+
 function pauseVideo() {
-	const video = document.querySelector('video');
+	const video = getVideo();
 	if(video) {
 		video.pause();
 	}
 }
 
 setInterval(() => {
+	const video = getVideo();
+	if(video?.src !== prev_video_src) {
+		prev_video_src = video?.src;
+		short_count++;
+	}
 	if(!isActive) return;
 	const shorts = document.location.pathname.includes('/shorts/');
 	if(popup && !shorts) {
