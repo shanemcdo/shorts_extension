@@ -1,18 +1,35 @@
 const State = Object.freeze({
 	START: 0,
 	REALLY: 1,
+	HOW_LONG: 2,
+	WAITING_FIVE_MINUTES: 3,
+	DONE_WAITING_FIVE_MINUTES: 4,
 });
 const TEXT = {
 	[State.START]: [ 'Hey there bud.', 'It looks like you\'re doomscrolling again.\nAre you sure that\'s what you want to do?'],
 	[State.REALLY]: [ 'Really?', 'Are you sure?'],
+	[State.HOW_LONG]: [ 'Fine', 'How long are you going to doomscroll?'],
+	[State.WAITING_FIVE_MINUTES]: [ 'Okayyyy', 'I\'ll check back up on you in 5 minutes.'],
+	[State.DONE_WAITING_FIVE_MINUTES]: [ 'Hello again!', 'You done?'],
 };
 const BUTTONS = {
 	[State.START]: [ ['No', closeCurrentTab], ['Yes', () => State.REALLY] ],
-	[State.REALLY]: [ ['No', closeCurrentTab], ['Yes', () => State.START] ],
+	[State.REALLY]: [ ['No :(', closeCurrentTab], ['Yes Really', () => State.HOW_LONG] ],
+	[State.HOW_LONG]: [
+		['I\'ll stop', closeCurrentTab],
+		['5 Minutes', giveFiveMinutes],
+		['Just this one short', giveOneShort]
+	],
+	[State.WAITING_FIVE_MINUTES]: [ ['Ok', () => {
+		removePopup();
+		return State.WAITING_FIVE_MINUTES;
+	}] ],
+	[State.DONE_WAITING_FIVE_MINUTES]: [ ['Ok, yeah I\'m done', closeCurrentTab], ['No I\'m not done', () => State.HOW_LONG] ],
 };
 
 let popup = null;
 let state = State.START;
+let isActive = true;
 
 function newEl(tag, parent = null) {
 	const el = document.createElement(tag);
@@ -38,10 +55,9 @@ function createPopup() {
 	popup.style.top = 0;
 	popup.style.width = '100vw';
 	popup.style.height = '100vh';
-	popup.style.background = '#999';
-	popup.style.opacity = 0.2;
+	popup.style.background = 'rgba(153, 153, 153, 0.5)';
 	popup.style['z-index'] = 1000000;
-	const div = newEl('div', document.body);
+	const div = newEl('div', popup);
 	div.style.position = 'absolute';
 	div.style.left = '10vw';
 	div.style.top = '10vh';
@@ -79,6 +95,21 @@ async function closeCurrentTab() {
 	});
 }
 
+
+function giveFiveMinutes() {
+	setTimeout(() => {
+		state = State.DONE_WAITING_FIVE_MINUTES;
+		isActive = true;
+	}, 5 * 60 * 1000);
+	isActive = false;
+	return State.WAITING_FIVE_MINUTES;
+}
+
+function giveOneShort() {
+	// TODO
+}
+
+
 function pauseVideo() {
 	const video = document.querySelector('video');
 	if(video) {
@@ -87,6 +118,7 @@ function pauseVideo() {
 }
 
 setInterval(() => {
+	if(!isActive) return;
 	const shorts = document.location.pathname.includes('/shorts/');
 	if(popup && !shorts) {
 		removePopup();
