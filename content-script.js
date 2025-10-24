@@ -1,4 +1,18 @@
+const State = Object.freeze({
+	START: 'start',
+	REALLY: 'really',
+});
+const TEXT = {
+	[State.START]: [ 'Hey there bud.', 'It looks like you\'re doomscrolling again.\nAre you sure that\'s what you want to do?'],
+	[State.REALLY]: [ 'Really?', 'Are you sure?'],
+};
+const BUTTONS = {
+	[State.START]: [ ['No', closeCurrentTab], ['Yes', () => State.REALLY] ],
+	[State.REALLY]: [ ['No', closeCurrentTab], ['Yes', () => State.START] ],
+};
+
 let popup = null;
+let state = State.START;
 
 function newEl(tag, parent = null) {
 	const el = document.createElement(tag);
@@ -8,10 +22,12 @@ function newEl(tag, parent = null) {
 	return el;
 }
 
-function newP(text, parent = null) {
-	const el = newEl('p', parent);
-	el.innerText = text;
-	return el;
+function newButton(innerText, parent = null, callback = null) {
+	const button = newEl('button', parent);
+	button.innerText = innerText;
+	button.style['font-size'] = '2rem';
+	button.onclick = callback;
+	return button;
 }
 
 function createPopup() {
@@ -37,13 +53,17 @@ function createPopup() {
 	div.style['border-radius'] = '1rem';
 	div.style['font-size'] = '2rem';
 	const h1 = newEl('h1', div);
-	h1.innerText = 'Hey there bud.';
 	h1.style.margin = '1rem';
-	newP('It looks like you\'re doomscrolling again.', div);
-	newP('Are you sure that\'s what you want to do?', div);
-	const closeButton = newEl('button', div);
-	closeButton.innerText = 'No';
-	closeButton.onclick = closeCurrentTab;
+	const pTag = newEl('p', div);
+	const updateText = () => {
+		[h1.innerText, pTag.innerText] = TEXT[state];
+		const buttons = BUTTONS[state].map(([text, callback]) => newButton(text, div, () => {
+			state = callback();
+			buttons.forEach(button => button.remove());
+			updateText();
+		}));
+	};
+	updateText();
 }
 
 function removePopup() {
