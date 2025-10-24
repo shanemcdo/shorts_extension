@@ -25,8 +25,9 @@ function newEl(tag, parent = null) {
 function newButton(innerText, parent = null, callback = null) {
 	const button = newEl('button', parent);
 	button.innerText = innerText;
-	button.style['font-size'] = '2rem';
 	button.onclick = callback;
+	button.style.margin = '1rem 0';
+	button.style['font-size'] = '2rem';
 	return button;
 }
 
@@ -55,6 +56,7 @@ function createPopup() {
 	const h1 = newEl('h1', div);
 	h1.style.margin = '1rem';
 	const pTag = newEl('p', div);
+	pTag.style.margin = '1rem';
 	const updateText = () => {
 		[h1.innerText, pTag.innerText] = TEXT[state];
 		const buttons = BUTTONS[state].map(([text, callback]) => newButton(text, div, () => {
