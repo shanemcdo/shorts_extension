@@ -1,6 +1,6 @@
 const State = Object.freeze({
-	START: 'start',
-	REALLY: 'really',
+	START: 0,
+	REALLY: 1,
 });
 const TEXT = {
 	[State.START]: [ 'Hey there bud.', 'It looks like you\'re doomscrolling again.\nAre you sure that\'s what you want to do?'],
