@@ -148,7 +148,7 @@ setInterval(() => {
 		prev_video_src = video?.src;
 		short_count++;
 	}
-	if(!isActive) return;
+	if(!isActive || short_count < 2) return;
 	const shorts = document.location.pathname.includes('/shorts/');
 	if(popup && !shorts) {
 		removePopup();
