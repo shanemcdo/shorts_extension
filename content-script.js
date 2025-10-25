@@ -86,8 +86,8 @@ function createPopup() {
 	const pTag = newEl('p', div);
 	pTag.style.margin = '1rem';
 	const updateText = () => {
-		[h1.innerText, pTag.innerText] = TEXT[state];
-		const buttons = BUTTONS[state].map(([text, callback]) => newButton(text, div, () => {
+		[h1.innerText, pTag.innerText] = TEXT[state] ?? ['', ''];
+		const buttons = (BUTTONS[state] ?? []).map(([text, callback]) => newButton(text, div, () => {
 			state = callback();
 			buttons.forEach(button => button.remove());
 			updateText();
