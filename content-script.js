@@ -9,7 +9,7 @@ const State = Object.freeze({
 });
 const TEXT = {
 	[State.START]: [ 'Hey there bud.', 'It looks like you\'re doomscrolling again.\nAre you sure that\'s what you want to do?'],
-	[State.REALLY]: [ 'Really?', 'Are you sure?'],
+	[State.REALLY]: [ 'Really?', 'Are you sure? I\'m going to reset the doomscroll timer.'],
 	[State.HOW_LONG]: [ 'Fine', 'How long are you going to doomscroll?'],
 	[State.WAITING_FIVE_MINUTES]: [ 'Okayyyy', 'I\'ll check back up on you in 5 minutes.'],
 	[State.DONE_WAITING_FIVE_MINUTES]: [ 'Hello again!', 'It\'s been 5 minutes. You done?'],
@@ -114,6 +114,7 @@ function giveFiveMinutes() {
 		isActive = true;
 	}, 5 * 60 * 1000);
 	isActive = false;
+	resetMindlessScrollingBookmark();
 	return State.WAITING_FIVE_MINUTES;
 }
 
@@ -127,6 +128,7 @@ function giveOneShort() {
 			clearInterval(interval);
 		}
 	}, 100);
+	resetMindlessScrollingBookmark();
 	return State.WAITING_ONE_SHORT;
 }
 
@@ -140,6 +142,14 @@ function pauseVideo() {
 	if(video) {
 		video.pause();
 	}
+}
+
+async function hasMindlessScrollingBookmark() {
+	return await chrome.runtime.sendMessage({ type: 'hasMindlessScrolling'});
+}
+
+async function resetMindlessScrollingBookmark() {
+	await chrome.runtime.sendMessage({ type: 'resetMindlessScrolling'});
 }
 
 setInterval(() => {
@@ -159,3 +169,5 @@ setInterval(() => {
 		pauseVideo();
 	}
 }, 100);
+
+resetMindlessScrollingBookmark();
