@@ -9,7 +9,11 @@ const State = Object.freeze({
 });
 const TEXT = {
 	[State.START]: [ 'Hey there bud.', 'It looks like you\'re doomscrolling again.\nAre you sure that\'s what you want to do?'],
-	[State.REALLY]: [ 'Really?', 'Are you sure? I\'m going to reset the doomscroll timer.'],
+	[State.REALLY]: [ 'Really?', async () => {
+		return await hasMindlessScrollingBookmark() ?
+		'Are you sure? I\'m going to reset the doomscroll timer.' :
+		'Are you sure?'
+	}],
 	[State.HOW_LONG]: [ 'Fine', 'How long are you going to doomscroll?'],
 	[State.WAITING_FIVE_MINUTES]: [ 'Okayyyy', 'I\'ll check back up on you in 5 minutes.'],
 	[State.DONE_WAITING_FIVE_MINUTES]: [ 'Hello again!', 'It\'s been 5 minutes. You done?'],
@@ -60,7 +64,7 @@ function newButton(innerText, parent = null, callback = null) {
 	return button;
 }
 
-function createPopup() {
+async function createPopup() {
 	popup = newEl('div', document.body);
 	popup.style.position = 'absolute';
 	popup.style.left = 0;
@@ -85,15 +89,23 @@ function createPopup() {
 	h1.style.margin = '1rem';
 	const pTag = newEl('p', div);
 	pTag.style.margin = '1rem';
-	const updateText = () => {
-		[h1.innerText, pTag.innerText] = TEXT[state] ?? ['', ''];
-		const buttons = (BUTTONS[state] ?? []).map(([text, callback]) => newButton(text, div, () => {
-			state = callback();
-			buttons.forEach(button => button.remove());
-			updateText();
-		}));
+	const updateText = async () => {
+		const [h1_innerText, pTag_innerText] = TEXT[state] ?? ['', ''];
+		h1.innerText = await (typeof h1_innerText === 'function' ? h1_innerText() : h1_innerText);
+		pTag.innerText = await (typeof pTag_innerText === 'function' ? pTag_innerText() : pTag_innerText);
+		const buttons = await Promise.all((BUTTONS[state] ?? []).map(async ([text, callback]) => 
+			newButton(
+				await (typeof text === 'function' ? text() : text),
+				div,
+				async () => {
+					state = await callback();
+					buttons.forEach(button => button.remove());
+					await updateText();
+				}
+			)
+		));
 	};
-	updateText();
+	await updateText();
 }
 
 function removePopup() {
@@ -152,7 +164,7 @@ async function resetMindlessScrollingBookmark() {
 	await chrome.runtime.sendMessage({ type: 'resetMindlessScrolling'});
 }
 
-setInterval(() => {
+setInterval(async () => {
 	const video = getVideo();
 	if(video?.src !== prev_video_src) {
 		prev_video_src = video?.src;
@@ -163,7 +175,7 @@ setInterval(() => {
 	if(popup && !shorts) {
 		removePopup();
 	} else if(!popup && shorts) {
-		createPopup();
+		await createPopup();
 		pauseVideo();
 	} else if(popup && shorts) {
 		pauseVideo();
