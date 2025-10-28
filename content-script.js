@@ -169,5 +169,3 @@ setInterval(() => {
 		pauseVideo();
 	}
 }, 100);
-
-resetMindlessScrollingBookmark();
