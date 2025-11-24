@@ -9,7 +9,16 @@ const WaitingType = Object.freeze({
 	FIVE_MINUTES: 0,
 	ONE_SHORT: 1,
 });
+
+let state = State.START;
 let waitingType = WaitingType.FIVE_MINUTES;
+let popup = null;
+let isActive = true;
+let prev_video_src = null;
+let prev_short_count = 0;
+let short_count = 0;
+const start_time = Date.now();
+
 const TEXT = {
 	[State.START]: [ 'Hey there bud.', 'It looks like you\'re doomscrolling again.\nAre you sure that\'s what you want to do?'],
 	[State.REALLY]: [ 'Really?', async () => {
@@ -21,9 +30,14 @@ const TEXT = {
 	[State.WAITING]: () => waitingType === WaitingType.FIVE_MINUTES 
 		? [ 'Okayyyy', 'I\'ll check back up on you in 5 minutes.']
 		: [ 'Fineeee', 'I\'ll come back after one short'],
-	[State.DONE_WAITING]: () => waitingType === WaitingType.FIVE_MINUTES
-		? [ 'Hello again!', 'It\'s been 5 minutes. You done?']
-		: [ 'I\'m Back!', 'It\'s been 1 short. You done?'],
+	[State.DONE_WAITING]: () => {
+		const choice = waitingType === WaitingType.FIVE_MINUTES
+			? '5 minutes'
+			: '1 short';
+		const elapsed_ms = Date.now() - start_time;
+		const elapsed_mins = elapsed_ms / 1000 / 60
+		return [ 'Hello again!', `It\'s been ${choice}. You done? You've watched a total of ${short_count - 1} shorts in ${elapsed_mins} minutes`]
+	}
 };
 const BUTTONS = {
 	[State.START]: [ ['No', closeCurrentTab], ['Yes', () => State.REALLY] ],
@@ -40,12 +54,6 @@ const BUTTONS = {
 	[State.DONE_WAITING]: [ ['Ok, yeah I\'m done', closeCurrentTab], ['No I\'m not done', () => State.HOW_LONG] ],
 };
 
-let popup = null;
-let state = State.START;
-let isActive = true;
-let prev_video_src = null;
-let prev_short_count = 0;
-let short_count = 0;
 
 function newEl(tag, parent = null) {
 	const el = document.createElement(tag);
