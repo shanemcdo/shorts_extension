@@ -150,8 +150,8 @@ function getVideo() {
 }
 
 function pauseVideo() {
-	const video = getVideo();
-	if(video) {
+	const videos = document.querySelectorAll('video');
+	for(const video of videos) {
 		video.pause();
 	}
 }
