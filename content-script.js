@@ -2,11 +2,14 @@ const State = Object.freeze({
 	START: 0,
 	REALLY: 1,
 	HOW_LONG: 2,
-	WAITING_FIVE_MINUTES: 3,
-	DONE_WAITING_FIVE_MINUTES: 4,
-	WAITING_ONE_SHORT: 5,
-	DONE_WAITING_ONE_SHORT: 6,
+	WAITING: 3,
+	DONE_WAITING: 4,
 });
+const WaitingType = Object.freeze({
+	FIVE_MINUTES: 0,
+	ONE_SHORT: 1,
+});
+let waitingType = WaitingType.FIVE_MINUTES;
 const TEXT = {
 	[State.START]: [ 'Hey there bud.', 'It looks like you\'re doomscrolling again.\nAre you sure that\'s what you want to do?'],
 	[State.REALLY]: [ 'Really?', async () => {
@@ -15,10 +18,12 @@ const TEXT = {
 		'Are you sure?'
 	}],
 	[State.HOW_LONG]: [ 'Fine', 'How long are you going to doomscroll?'],
-	[State.WAITING_FIVE_MINUTES]: [ 'Okayyyy', 'I\'ll check back up on you in 5 minutes.'],
-	[State.DONE_WAITING_FIVE_MINUTES]: [ 'Hello again!', 'It\'s been 5 minutes. You done?'],
-	[State.WAITING_ONE_SHORT]: [ 'Fineeee', 'I\'ll come back after one short'],
-	[State.DONE_WAITING_ONE_SHORT]: [ 'I\'m Back!', 'It\'s been 1 short. You done?'],
+	[State.WAITING]: () => waitingType === WaitingType.FIVE_MINUTES 
+		? [ 'Okayyyy', 'I\'ll check back up on you in 5 minutes.']
+		: [ 'Fineeee', 'I\'ll come back after one short'],
+	[State.DONE_WAITING]: () => waitingType === WaitingType.FIVE_MINUTES
+		? [ 'Hello again!', 'It\'s been 5 minutes. You done?']
+		: [ 'I\'m Back!', 'It\'s been 1 short. You done?'],
 };
 const BUTTONS = {
 	[State.START]: [ ['No', closeCurrentTab], ['Yes', () => State.REALLY] ],
@@ -28,16 +33,11 @@ const BUTTONS = {
 		['5 Minutes', giveFiveMinutes],
 		['Just this one short', giveOneShort]
 	],
-	[State.WAITING_FIVE_MINUTES]: [ ['Ok', () => {
+	[State.WAITING]: [ ['Ok', () => {
 		removePopup();
-		return State.WAITING_FIVE_MINUTES;
+		return State.WAITING;
 	}] ],
-	[State.DONE_WAITING_FIVE_MINUTES]: [ ['Ok, yeah I\'m done', closeCurrentTab], ['No I\'m not done', () => State.HOW_LONG] ],
-	[State.WAITING_ONE_SHORT]: [ ['Ok', () => {
-		removePopup();
-		return State.WAITING_ONE_SHORT;
-	}] ],
-	[State.DONE_WAITING_ONE_SHORT]: [ ['Ok, yeah I\'m done', closeCurrentTab], ['No I\'m not done', () => State.HOW_LONG] ],
+	[State.DONE_WAITING]: [ ['Ok, yeah I\'m done', closeCurrentTab], ['No I\'m not done', () => State.HOW_LONG] ],
 };
 
 let popup = null;
@@ -90,10 +90,18 @@ async function createPopup() {
 	const pTag = newEl('p', div);
 	pTag.style.margin = '1rem';
 	const updateText = async () => {
-		const [h1_innerText, pTag_innerText] = TEXT[state] ?? ['', ''];
+		let text = TEXT[state] ?? ['', ''];
+		if(typeof text === 'function') {
+			text = text();
+		}
+		const [h1_innerText, pTag_innerText] = await text;
 		h1.innerText = await (typeof h1_innerText === 'function' ? h1_innerText() : h1_innerText);
 		pTag.innerText = await (typeof pTag_innerText === 'function' ? pTag_innerText() : pTag_innerText);
-		const buttons = await Promise.all((BUTTONS[state] ?? []).map(async ([text, callback]) => 
+		let buttons = BUTTONS[state] ?? [];
+		if(typeof buttons === 'function') {
+			buttons = await buttons();
+		}
+		buttons = await Promise.all((buttons).map(async ([text, callback]) =>
 			newButton(
 				await (typeof text === 'function' ? text() : text),
 				div,
@@ -122,26 +130,28 @@ async function closeCurrentTab() {
 
 function giveFiveMinutes() {
 	setTimeout(() => {
-		state = State.DONE_WAITING_FIVE_MINUTES;
+		state = State.DONE_WAITING;
 		isActive = true;
 	}, 5 * 60 * 1000);
 	isActive = false;
+	waitingType = WaitingType.FIVE_MINUTES;
 	resetMindlessScrollingBookmark();
-	return State.WAITING_FIVE_MINUTES;
+	return State.WAITING;
 }
 
 function giveOneShort() {
 	isActive = false;
+	waitingType = WaitingType.ONE_SHORT;
 	prev_short_count = short_count;
 	const interval = setInterval(() => {
 		if(short_count > prev_short_count) {
-			state = State.DONE_WAITING_ONE_SHORT;
+			state = State.DONE_WAITING;
 			isActive = true;
 			clearInterval(interval);
 		}
 	}, 100);
 	resetMindlessScrollingBookmark();
-	return State.WAITING_ONE_SHORT;
+	return State.WAITING;
 }
 
 
