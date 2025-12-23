@@ -1,11 +1,29 @@
 html,
 body {
-	--bg: #222;
-	--fg: #eee;
-	--fg-accent: #aaf;
-	--fg-dark: #88d;
 	margin: 0;
 	padding: 0;
+	--bg-dark: hsl(0, 0%, 0%);
+	--bg: hsl(0, 0%, 5%);
+	--bg-light: hsl(0, 0%, 10%);
+	--border: hsl(0, 0%, 40%);
+	--text-muted: hsl(0, 0%, 70%);
+	--text: hsl(0, 0%, 95%);
+
+	--fg-accent: hsl(235, 100%, 70%);
+	--fg-accent-dark: hsl(0, 100%, 40%);
+
+	background: var(--bg-dark);
+	color: var(--text);
+
+	@media (prefers-color-scheme: light) {
+		--bg-dark: hsl(0, 0%, 85%);
+		--bg: hsl(0, 0%, 90%);
+		--bg-light: hsl(0, 0%, 95%);
+		--border: hsl(0, 0%, 60%);
+		--text-muted: hsl(0, 0%, 20%);
+		--text: hsl(0, 0%, 10%);
+
+	}
 }
 
 body {
@@ -13,4 +31,11 @@ body {
 	background: var(--bg);
 	color: var(--fg);
 	width: 40rem;
+}
+
+input,
+button {
+	border: 1px solid var(--border);
+	background: var(--bg);
+	color: var(--fg);
 }
