@@ -69,6 +69,8 @@ function newButton(innerText, parent = null, callback = null) {
 	button.onclick = callback;
 	button.style.margin = '1rem 0';
 	button.style['font-size'] = '2rem';
+	button.style.background = 'hsl(0, 0%, 20%)';
+	button.style.color = '#ddd';
 	return button;
 }
 
