@@ -190,8 +190,13 @@ function removeSuggestions() {
 	document.querySelectorAll('div.ytd-item-section-renderer').forEach(remove);
 }
 
+function shortsDisableScroll() {
+	document.querySelector('#shorts-inner-container').style.overflow = 'hidden';
+}
+
 (() => {
 	setInterval(async () => {
+		shortsDisableScroll();
 		const video = getVideo();
 		if(video?.src !== prev_video_src) {
 			prev_video_src = video?.src;
@@ -209,5 +214,8 @@ function removeSuggestions() {
 		}
 	}, 100);
 
-	setInterval(removeSuggestions, 100);
+	setInterval(() => {
+		if(document.location.pathname.includes('/results')) return;
+		removeSuggestions();
+	}, 100);
 })();
