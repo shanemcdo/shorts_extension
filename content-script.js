@@ -207,7 +207,7 @@ function removeSuggestions() {
 		} else if(popup && shorts) {
 			pauseVideo();
 		}
-
 	}, 100);
+
 	setInterval(removeSuggestions, 100);
 })();
