@@ -184,20 +184,29 @@ async function resetMindlessScrollingBookmark() {
 	await chrome.runtime.sendMessage({ type: 'resetMindlessScrolling'});
 }
 
-setInterval(async () => {
-	const video = getVideo();
-	if(video?.src !== prev_video_src) {
-		prev_video_src = video?.src;
-		short_count++;
-	}
-	if(!isActive || short_count < 2) return;
-	const shorts = document.location.pathname.includes('/shorts/');
-	if(popup && !shorts) {
-		removePopup();
-	} else if(!popup && shorts) {
-		await createPopup();
-		pauseVideo();
-	} else if(popup && shorts) {
-		pauseVideo();
-	}
-}, 100);
+function removeSuggestions() {
+	const remove = item => item.remove();
+	document.querySelectorAll('div.ytd-rich-grid-renderer').forEach(remove)
+}
+
+(() => {
+	setInterval(async () => {
+		const video = getVideo();
+		if(video?.src !== prev_video_src) {
+			prev_video_src = video?.src;
+			short_count++;
+		}
+		if(!isActive || short_count < 2) return;
+		const shorts = document.location.pathname.includes('/shorts/');
+		if(popup && !shorts) {
+			removePopup();
+		} else if(!popup && shorts) {
+			await createPopup();
+			pauseVideo();
+		} else if(popup && shorts) {
+			pauseVideo();
+		}
+	}, 100);
+
+	setInterval(removeSuggestions, 100);
+})();
