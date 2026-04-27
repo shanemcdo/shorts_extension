@@ -186,7 +186,8 @@ async function resetMindlessScrollingBookmark() {
 
 function removeSuggestions() {
 	const remove = item => item.remove();
-	document.querySelectorAll('div.ytd-rich-grid-renderer').forEach(remove)
+	document.querySelectorAll('div.ytd-rich-grid-renderer').forEach(remove);
+	document.querySelectorAll('div.ytd-item-section-renderer').forEach(remove);
 }
 
 (() => {
@@ -206,7 +207,7 @@ function removeSuggestions() {
 		} else if(popup && shorts) {
 			pauseVideo();
 		}
-	}, 100);
 
+	}, 100);
 	setInterval(removeSuggestions, 100);
 })();
