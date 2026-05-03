@@ -215,7 +215,10 @@ function shortsDisableScroll() {
 	}, 100);
 
 	setInterval(() => {
-		if(document.location.pathname.includes('/results')) return;
+		if(
+			document.location.pathname.includes('/results')
+			|| document.location.pathname.includes('/playlist')
+		) return;
 		removeSuggestions();
 	}, 100);
 })();
