@@ -218,6 +218,7 @@ function shortsDisableScroll() {
 		if(
 			document.location.pathname.includes('/results')
 			|| document.location.pathname.includes('/playlist')
+			|| document.location.pathname.includes('/@')
 		) return;
 		removeSuggestions();
 	}, 100);
